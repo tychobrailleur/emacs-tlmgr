@@ -23,8 +23,6 @@
 ;; This package provides facilities to handle the TeXLive PDB format.
 
 ;;; Code:
-
-
 (cl-defstruct etelmgr-pdbobj
   name
   category

@@ -23,8 +23,6 @@
 ;; This package provides TeXLive Manager features in Emacs.
 
 ;;; Code:
-
-
 (require 'etelmgr-tlpdb)
 (require 'seq)
 
@@ -34,6 +32,7 @@
 (defcustom etelmgr-texlive-dir
   "/usr/local/texlive/2016"
   "Directory where TeXLive is installed"
+  ;; FIXME – TeXLive location should be computed automatically...
   ;; :set (lambda (sym val)
   ;;        (unless val
   ;;          (set-default sym (replace-regexp-in-string
@@ -51,7 +50,7 @@
   (setq buffer-read-only t)
   (setq tabulated-list-format
         `[("Package" 25 nil)
-          ("Version" 13 nil)
+          ("Version" 8 nil)
           ("Description" 60 nil)])
   (setq tabulated-list-padding 2)
   (tabulated-list-init-header))
@@ -59,7 +58,9 @@
 
 (defun etelmgr-fetch-packages ()
   (seq-sort '(lambda (a b) (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
-            (seq-filter '(lambda (e) (equal (etelmgr-pdbobj-category e) "Package"))
+            ;; Only retrieve packages, and abritrarily exclude texlive config.
+            (seq-filter '(lambda (e) (and (equal (etelmgr-pdbobj-category e) "Package")
+                                          (not (equal (etelmgr-pdbobj-name e) "00texlive.config"))))
                         (etelmgr-tlpdb-parse-file
                          (concat (file-name-as-directory (expand-file-name etelmgr-texlive-dir))
                                  (file-name-as-directory etelmgr-infra-location)
@@ -72,10 +73,10 @@
 
 (defun etelmgr-list-packages ()
   (interactive)
-  (let ((buf (get-buffer-create "*TeXLive Packages*"))
-        (packages (etelmgr-fetch-packages)))
+  (let ((buf (get-buffer-create "*TeXLive Packages*")))
     (with-current-buffer buf
       (etelmgr-mode)
+      (setq packages (etelmgr-fetch-packages))
       (setq tabulated-list-entries (mapcar #'etelmgr-convert-to-entry packages))
       (tabulated-list-print 1))
     (switch-to-buffer buf)))
