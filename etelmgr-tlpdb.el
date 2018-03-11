@@ -52,7 +52,7 @@
           (tlpdb (make-hash-table :test 'equal)))
       (while (not (eobp))
         (setq current-line (replace-regexp-in-string "\n\\'" "" (thing-at-point 'line t)))
-        (if (equal current-line "")
+        (if (string= current-line "")
             (progn
               (setq current-pdb (cons current-pdbobj current-pdb))
               (setq current-pdbobj (make-etelmgr-pdbobj)))

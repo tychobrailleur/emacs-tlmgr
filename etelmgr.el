@@ -51,6 +51,7 @@
   (setq tabulated-list-format
         `[("Package" 25 nil)
           ("Version" 8 nil)
+          ("Installed" 10 nil)
           ("Description" 60 nil)])
   (setq tabulated-list-padding 2)
   (tabulated-list-init-header))
@@ -69,6 +70,7 @@
 (defun etelmgr-convert-to-entry (pdbobj)
   (list (etelmgr-pdbobj-name pdbobj) `[,(etelmgr-pdbobj-name pdbobj)
                                        ,(or (etelmgr-pdbobj-rev pdbobj) "")
+                                       "installed"
                                        ,(or (etelmgr-pdbobj-shortdesc pdbobj) "")]))
 
 (defun etelmgr-list-packages ()

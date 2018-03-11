@@ -1,6 +1,12 @@
 TeXLive Manager in Emacs.
 
 
+
+#+CAPTION: List of installed packages in TexLive
+[[./images/capture.png]]
+
+
+
 * License
 
 Copyright (c) 2018  Sébastien Le Callonnec.  Licensed under GPLv3.
