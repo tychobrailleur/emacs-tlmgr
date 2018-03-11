@@ -46,6 +46,16 @@
 (defconst etelmgr-infra-location "tlpkg")
 (defconst etelmgr-database-name "texlive.tlpdb")
 
+(define-derived-mode etelmgr-mode tabulated-list-mode "Etelmgr"
+  "Major mode for browsing a list of TeXLive packages."
+  (setq buffer-read-only t)
+  (setq tabulated-list-format
+        `[("Package" 25 nil)
+          ("Version" 13 nil)
+          ("Description" 60 nil)])
+  (setq tabulated-list-padding 2)
+  (tabulated-list-init-header))
+
 
 (defun etelmgr-fetch-packages ()
   (seq-sort '(lambda (a b) (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
@@ -65,15 +75,10 @@
   (let ((buf (get-buffer-create "*TeXLive Packages*"))
         (packages (etelmgr-fetch-packages)))
     (with-current-buffer buf
-      (setq tabulated-list-format
-            `[("Package" 25 nil)
-              ("Version" 13 nil)
-              ("Description" 60 nil)])
-      (tabulated-list-init-header)
+      (etelmgr-mode)
       (setq tabulated-list-entries (mapcar #'etelmgr-convert-to-entry packages))
       (tabulated-list-print 1))
     (switch-to-buffer buf)))
 
-
-
+(provide 'etelmgr)
 ;;; etelmgr.el ends here
