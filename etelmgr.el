@@ -25,6 +25,7 @@
 ;;; Code:
 (require 'etelmgr-tlpdb)
 (require 'seq)
+(require 'url)
 
 (defgroup etelmgr nil
   "etelmgr group")
@@ -42,8 +43,29 @@
   :type 'directory
   :group 'etelmgr)
 
+
+;; List of mirrors
+;; ftp.heanet.ie/pub/CTAN/tex/systems/texlive/tlnet/tlpkg/installer/ctan-mirrors.pl
+(defcustom etelmgr-repository-url
+  "http://mirrors.ircam.fr/pub/CTAN/systems/texlive/tlnet"
+  ;;  "http://ftp.heanet.ie/pub/CTAN/tex/systems/texlive/tlnet"
+  "TeXLive repository URL"
+  :type 'string
+  :group 'etelmgr)
+
 (defconst etelmgr-infra-location "tlpkg")
 (defconst etelmgr-database-name "texlive.tlpdb")
+
+;; Download current TeXLive DB from Mirror and decompress.
+(defun etelmgr--download-tlpdb (root)
+  (message (format "Downloading TL repo: %s" root))
+  (let ((temp-file (make-temp-file "etelmgr" nil ".xz"))
+        (buf (get-buffer-create "*texlive-repo*"))
+        (remote-tlpdb (format "%s/tlpkg/texlive.tlpdb.xz" root)))
+    (url-copy-file remote-tlpdb temp-file t t)
+    (shell-command (concat "unxz " temp-file))
+    ;;    (message (format "File size: %d" (nth 7 (file-attributes (file-name-sans-extension temp-file) 'string))))
+    (expand-file-name (file-name-sans-extension temp-file))))
 
 (define-derived-mode etelmgr-mode tabulated-list-mode "Etelmgr"
   "Major mode for browsing a list of TeXLive packages."
@@ -56,9 +78,11 @@
   (setq tabulated-list-padding 2)
   (tabulated-list-init-header))
 
+(defun etelmgr--sort-package-by-name (a b)
+  (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
 
-(defun etelmgr-fetch-packages ()
-  (seq-sort '(lambda (a b) (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
+(defun etelmgr--fetch-packages ()
+  (seq-sort '#etelmgr--sort-package-by-name
             ;; Only retrieve packages, and abritrarily exclude texlive config.
             (seq-filter '(lambda (e) (and (equal (etelmgr-pdbobj-category e) "Package")
                                           (not (equal (etelmgr-pdbobj-name e) "00texlive.config"))))
@@ -67,7 +91,7 @@
                                  (file-name-as-directory etelmgr-infra-location)
                                  etelmgr-database-name)))))
 
-(defun etelmgr-convert-to-entry (pdbobj)
+(defun etelmgr--convert-to-entry (pdbobj)
   (list (etelmgr-pdbobj-name pdbobj) `[,(etelmgr-pdbobj-name pdbobj)
                                        ,(or (etelmgr-pdbobj-rev pdbobj) "")
                                        "installed"
@@ -75,11 +99,12 @@
 
 (defun etelmgr-list-packages ()
   (interactive)
-  (let ((buf (get-buffer-create "*TeXLive Packages*")))
+  (let* ((buf (get-buffer-create "*TeXLive Packages*"))
+        (latest-tlpdb (etelmgr--download-tlpdb etelmgr-repository-url)))
     (with-current-buffer buf
       (etelmgr-mode)
-      (setq packages (etelmgr-fetch-packages))
-      (setq tabulated-list-entries (mapcar #'etelmgr-convert-to-entry packages))
+      (setq packages (etelmgr--fetch-packages))
+      (setq tabulated-list-entries (mapcar #'etelmgr--convert-to-entry packages))
       (tabulated-list-print 1))
     (switch-to-buffer buf)))
 

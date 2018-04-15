@@ -6,7 +6,6 @@ TeXLive Manager in Emacs.
 [[./images/capture.png]]
 
 
-
 * License
 
 Copyright (c) 2018  Sébastien Le Callonnec.  Licensed under GPLv3.

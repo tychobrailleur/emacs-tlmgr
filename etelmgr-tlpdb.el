@@ -36,7 +36,7 @@
   containersize
   containerchecksum)
 
-(defun etelmgr-pdbobj-extract-value (str)
+(defun etelmgr-tlpdb--extract-value (str)
   (if (string-match "\\([^ ]*\\) \\(.*\\)" str)
       (cons (match-string 1 str) (cons (match-string 2 str) '()))
     (list str)))
@@ -57,7 +57,7 @@
               (setq current-pdb (cons current-pdbobj current-pdb))
               (setq current-pdbobj (make-etelmgr-pdbobj)))
           (progn
-            (setq line-split (etelmgr-pdbobj-extract-value current-line))
+            (setq line-split (etelmgr-tlpdb--extract-value current-line))
             (cond
              ((equal (car line-split) "name")
               (setf (etelmgr-pdbobj-name current-pdbobj) (cadr line-split)))
