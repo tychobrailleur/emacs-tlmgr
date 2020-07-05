@@ -1,6 +1,6 @@
 ;;; etelmgr.el --- TeXLive Manager in Emacs.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Sébastien Le Callonnec
+;; Copyright (C) 2018–2020  Sébastien Le Callonnec
 
 ;; Author: Sébastien Le Callonnec <sebastien@weblogism.com>
 ;; Keywords:
@@ -31,8 +31,8 @@
   "etelmgr group")
 
 (defcustom etelmgr-texlive-dir
-  "/usr/local/texlive/2016"
-  "Directory where TeXLive is installed"
+  "/usr/local/texlive/2020"
+  "Directory where TeXLive is installed."
   ;; FIXME – TeXLive location should be computed automatically...
   ;; :set (lambda (sym val)
   ;;        (unless val
@@ -49,7 +49,7 @@
 (defcustom etelmgr-repository-url
   "http://mirrors.ircam.fr/pub/CTAN/systems/texlive/tlnet"
   ;;  "http://ftp.heanet.ie/pub/CTAN/tex/systems/texlive/tlnet"
-  "TeXLive repository URL"
+  "TeXLive repository URL."
   :type 'string
   :group 'etelmgr)
 
@@ -57,11 +57,12 @@
 (defconst etelmgr-database-name "texlive.tlpdb")
 
 ;; Download current TeXLive DB from Mirror and decompress.
-(defun etelmgr--download-tlpdb (root)
-  (message (format "Downloading TL repo: %s" root))
+(defun etelmgr--download-tlpdb (base-url)
+  "Download the current TeXLiveDB from the mirror at BASE-URL and decompress."
+  (message (format "Downloading TL repo: %s" base-url))
   (let ((temp-file (make-temp-file "etelmgr" nil ".xz"))
         (buf (get-buffer-create "*texlive-repo*"))
-        (remote-tlpdb (format "%s/tlpkg/texlive.tlpdb.xz" root)))
+        (remote-tlpdb (format "%s/tlpkg/texlive.tlpdb.xz" base-url)))
     (url-copy-file remote-tlpdb temp-file t t)
     (shell-command (concat "unxz " temp-file))
     ;;    (message (format "File size: %d" (nth 7 (file-attributes (file-name-sans-extension temp-file) 'string))))
@@ -82,7 +83,7 @@
   (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
 
 (defun etelmgr--fetch-packages ()
-  (seq-sort '#etelmgr--sort-package-by-name
+  (seq-sort #'etelmgr--sort-package-by-name
             ;; Only retrieve packages, and abritrarily exclude texlive config.
             (seq-filter '(lambda (e) (and (equal (etelmgr-pdbobj-category e) "Package")
                                           (not (equal (etelmgr-pdbobj-name e) "00texlive.config"))))

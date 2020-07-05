@@ -8,4 +8,4 @@ TeXLive Manager in Emacs.
 
 * License
 
-Copyright (c) 2018  Sébastien Le Callonnec.  Licensed under GPLv3.
+Copyright (c) 2018—2020  Sébastien Le Callonnec.  Licensed under GPLv3.
