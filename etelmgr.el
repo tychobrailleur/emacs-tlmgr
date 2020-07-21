@@ -86,7 +86,7 @@
   (seq-sort #'etelmgr--sort-package-by-name
             ;; Only retrieve packages, and abritrarily exclude texlive config.
             (seq-filter '(lambda (e) (and (equal (etelmgr-pdbobj-category e) "Package")
-                                          (not (equal (etelmgr-pdbobj-name e) "00texlive.config"))))
+                                     (not (equal (etelmgr-pdbobj-name e) "00texlive.config"))))
                         (etelmgr-tlpdb-parse-file
                          (concat (file-name-as-directory (expand-file-name etelmgr-texlive-dir))
                                  (file-name-as-directory etelmgr-infra-location)
@@ -99,9 +99,10 @@
                                        ,(or (etelmgr-pdbobj-shortdesc pdbobj) "")]))
 
 (defun etelmgr-list-packages ()
+  "List the TeXLive packages using `tabulated-list-mode'."
   (interactive)
   (let* ((buf (get-buffer-create "*TeXLive Packages*"))
-        (latest-tlpdb (etelmgr--download-tlpdb etelmgr-repository-url)))
+         (latest-tlpdb (etelmgr--download-tlpdb etelmgr-repository-url)))
     (with-current-buffer buf
       (etelmgr-mode)
       (setq packages (etelmgr--fetch-packages))

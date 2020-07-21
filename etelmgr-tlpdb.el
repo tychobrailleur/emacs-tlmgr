@@ -1,6 +1,6 @@
 ;;; etelmgr-tlpdb.el --- TeXLive Manager in Emacs.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Sébastien Le Callonnec
+;; Copyright (C) 2018–2020  Sébastien Le Callonnec
 
 ;; Author: Sébastien Le Callonnec <sebastien@weblogism.com>
 ;; Keywords:
@@ -37,19 +37,20 @@
   containerchecksum)
 
 (defun etelmgr-tlpdb--extract-value (str)
+  "Extract 'key value' pairs from STR."
   (if (string-match "\\([^ ]*\\) \\(.*\\)" str)
       (cons (match-string 1 str) (cons (match-string 2 str) '()))
     (list str)))
 
 (defun etelmgr-tlpdb-parse-file (file)
+  "Parse a TeXLive PDB FILE and return a `etelmgr-pdobj` record."
   (with-temp-buffer
     (insert-file-contents file)
     (goto-char (point-min))
     (let ((current-line nil)
           (current-pdb '())
           (current-pdbobj (make-etelmgr-pdbobj))
-          (line-split nil)
-          (tlpdb (make-hash-table :test 'equal)))
+          (line-split nil))
       (while (not (eobp))
         (setq current-line (replace-regexp-in-string "\n\\'" "" (thing-at-point 'line t)))
         (if (string= current-line "")
