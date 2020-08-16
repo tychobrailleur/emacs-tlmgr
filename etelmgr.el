@@ -106,6 +106,7 @@
   (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
 
 (defun etelmgr--fetch-packages ()
+  "List packages installed on the system."
   (seq-sort #'etelmgr--sort-package-by-name
             ;; Only retrieve packages, and abritrarily exclude texlive config.
             (seq-filter '(lambda (e) (and (equal (etelmgr-pdbobj-category e) "Package")
@@ -116,6 +117,7 @@
                                  etelmgr-database-name)))))
 
 (defun etelmgr--convert-to-entry (pdbobj)
+  "Convert tlpdb database PDBOBJ to tabulated entries."
   (list (etelmgr-pdbobj-name pdbobj) `[,(propertize (etelmgr-pdbobj-name pdbobj)
                                                     'face 'etelmgr-package-name)
                                        ,(or (etelmgr-pdbobj-rev pdbobj) "")
@@ -127,12 +129,14 @@
   (interactive)
   (let* ((buf (get-buffer-create "*TeXLive Packages*"))
          (latest-tlpdb (etelmgr--download-tlpdb etelmgr-repository-url)))
+    ;; TODO USe downloaded latest-tlpdb
     (with-current-buffer buf
       (etelmgr-mode)
       (setq packages (etelmgr--fetch-packages))
       (setq tabulated-list-entries (mapcar #'etelmgr--convert-to-entry packages))
       (tabulated-list-print 1))
     (switch-to-buffer buf)))
+
 
 (provide 'etelmgr)
 ;;; etelmgr.el ends here
