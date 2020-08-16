@@ -3,6 +3,7 @@
 ;; Copyright (C) 2018–2020  Sébastien Le Callonnec
 
 ;; Author: Sébastien Le Callonnec <sebastien@weblogism.com>
+;; Maintainer: Sébastien Le Callonnec <sebastien@weblogism.com>
 ;; Keywords:
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -44,6 +45,9 @@
   :group 'etelmgr)
 
 
+(defface etelmgr-package-name '((t :inherit link))
+  "Face used to display package name as a link.")
+
 ;; List of mirrors
 ;; ftp.heanet.ie/pub/CTAN/tex/systems/texlive/tlnet/tlpkg/installer/ctan-mirrors.pl
 (defcustom etelmgr-repository-url
@@ -65,8 +69,26 @@
         (remote-tlpdb (format "%s/tlpkg/texlive.tlpdb.xz" base-url)))
     (url-copy-file remote-tlpdb temp-file t t)
     (shell-command (concat "unxz " temp-file))
-    ;;    (message (format "File size: %d" (nth 7 (file-attributes (file-name-sans-extension temp-file) 'string))))
     (expand-file-name (file-name-sans-extension temp-file))))
+
+(defun etelmgr-view-package ()
+  "Show the details of the selected package."
+  (interactive)
+  (let ((selected-entry (tabulated-list-get-id))
+        (entry-buffer (get-buffer-create "Etelmgr Package")))
+    (with-current-buffer entry-buffer
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (insert (format "Selected entry: %s" selected-entry))
+      (setq buffer-read-only t)
+      (setq mark-active nil)
+      (switch-to-buffer-other-window entry-buffer))))
+
+
+(defvar etelmgr-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-m" 'etelmgr-view-package)
+    map))
 
 (define-derived-mode etelmgr-mode tabulated-list-mode "Etelmgr"
   "Major mode for browsing a list of TeXLive packages."
@@ -77,7 +99,8 @@
           ("Installed" 10 nil)
           ("Description" 60 nil)])
   (setq tabulated-list-padding 2)
-  (tabulated-list-init-header))
+  (tabulated-list-init-header)
+  (use-local-map etelmgr-mode-map))
 
 (defun etelmgr--sort-package-by-name (a b)
   (string-lessp (etelmgr-pdbobj-name a) (etelmgr-pdbobj-name b)))
@@ -93,7 +116,8 @@
                                  etelmgr-database-name)))))
 
 (defun etelmgr--convert-to-entry (pdbobj)
-  (list (etelmgr-pdbobj-name pdbobj) `[,(etelmgr-pdbobj-name pdbobj)
+  (list (etelmgr-pdbobj-name pdbobj) `[,(propertize (etelmgr-pdbobj-name pdbobj)
+                                                    'face 'etelmgr-package-name)
                                        ,(or (etelmgr-pdbobj-rev pdbobj) "")
                                        "installed"
                                        ,(or (etelmgr-pdbobj-shortdesc pdbobj) "")]))
